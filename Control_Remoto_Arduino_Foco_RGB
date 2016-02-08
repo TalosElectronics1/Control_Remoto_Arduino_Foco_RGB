@@ -1,0 +1,101 @@
+#include <IRremote.h>
+int RECV_PIN = 11;
+int Foco=12;
+int LedRojo=2;
+int LedVerde=3;
+int LedAzul=4;
+IRrecv irrecv(RECV_PIN);
+decode_results results;
+
+void setup()
+{
+  Serial.begin(9600);
+  irrecv.enableIRIn(); // Start the receiver
+   pinMode(Foco, OUTPUT);
+   pinMode(LedRojo,OUTPUT);
+   pinMode(LedVerde,OUTPUT);
+   pinMode(LedAzul,OUTPUT);
+   digitalWrite(Foco,HIGH);
+}
+
+void dump(decode_results *results) {
+  int count = results->rawlen;
+  if (results->decode_type == UNKNOWN) {
+    Serial.println("Could not decode message");
+  } 
+  else {
+    if (results->decode_type == NEC) {
+      Serial.print("Decoded NEC: ");
+    } 
+    else if (results->decode_type == SONY) {
+      Serial.print("Decoded SONY: ");
+    } 
+    else if (results->decode_type == RC5) {
+      Serial.print("Decoded RC5: ");
+    } 
+    else if (results->decode_type == RC6) {
+      Serial.print("Decoded RC6: ");
+    }
+    Serial.print(results->value, HEX);
+    Serial.print(" (");
+    Serial.print(results->bits, DEC);
+    Serial.println(" bits)");
+  }
+  Serial.print("Raw (");
+  Serial.print(count, DEC);
+  Serial.print("): ");
+
+  for (int i = 0; i < count; i++) {
+    if ((i % 2) == 1) {
+      Serial.print(results->rawbuf[i]*USECPERTICK, DEC);
+    } 
+    else {
+      Serial.print(-(int)results->rawbuf[i]*USECPERTICK, DEC);
+    }
+    Serial.print(" ");
+  }
+  Serial.println("");
+}
+
+
+void loop() {
+  if (irrecv.decode(&results)) {
+    Serial.println(results.value, HEX);
+    dump(&results);
+    irrecv.resume(); // Receive the next value
+   if(results.value==0xFF02FD)
+  {
+   digitalWrite(Foco,LOW);
+  } 
+    if(results.value==0xFFA857)
+  {
+   digitalWrite(Foco,HIGH);
+  }
+   if(results.value==0xFFE21D)
+  {
+   digitalWrite(LedRojo,HIGH);
+  }
+  if(results.value==0xFFC23D)
+  {
+   digitalWrite(LedVerde,HIGH);
+  }
+  if(results.value==0xFF906F)
+  {
+   digitalWrite(LedAzul,HIGH);
+  }
+   if(results.value==0xFFA25D)
+  {
+   digitalWrite(LedRojo,LOW);
+  }
+  if(results.value==0xFF22DD)
+  {
+   digitalWrite(LedVerde,LOW);
+  }
+  if(results.value==0xFFE01F)
+  {
+   digitalWrite(LedAzul,LOW);
+  }
+
+}
+  
+}
